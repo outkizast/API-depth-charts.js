@@ -16,8 +16,8 @@
 //   "node-html-parser": "^6.1.13"
 // =============================================================================
 
-import fetch from 'node-fetch';
-import { parse } from 'node-html-parser';
+const fetch = require('node-fetch');
+const { parse } = require('node-html-parser');
 
 // Ourlads uses its own team slug format — map standard NFL abbrs to Ourlads slugs
 const TEAM_SLUGS = {
@@ -111,7 +111,7 @@ function extractPlayerName(raw) {
 
 // ─── Vercel handler ───────────────────────────────────────────────────────────
 
-export default async function handler(req, res) {
+module.exports = async function handler(req, res) {
   // CORS — allow your Expo/RN app to call this
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'GET, OPTIONS');
