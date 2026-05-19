@@ -109,10 +109,28 @@ function extractPlayerName(raw) {
     .trim();
 }
 
+// Temporary debug: returns raw HTML from Ourlads for inspection
+async function debugRawHtml(teamAbbr) {
+  const slug = TEAM_SLUGS[teamAbbr];
+  const url = `${OURLADS_BASE}/${slug}`;
+  const res = await fetch(url, {
+    headers: {
+      'User-Agent': 'Mozilla/5.0 (iPhone; CPU iPhone OS 17_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.0 Mobile/15E148 Safari/604.1',
+      'Accept': 'text/html,application/xhtml+xml',
+      'Referer': 'https://www.ourlads.com/',
+    },
+  });
+  return await res.text();
+}
+
 // ─── Vercel handler ───────────────────────────────────────────────────────────
 
 module.exports = async function handler(req, res) {
   // CORS — allow your Expo/RN app to call this
+  if (req.query.debug === '1') {
+  const html = await debugRawHtml(req.query.team ?? 'KC');
+  return res.status(200).send(html);
+}
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'GET, OPTIONS');
   if (req.method === 'OPTIONS') { res.status(200).end(); return; }
