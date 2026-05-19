@@ -2,7 +2,6 @@
   "name": "fantasy-proxy",
   "version": "1.0.0",
   "dependencies": {
-    "node-fetch": "^2.7.0",
     "node-html-parser": "^6.1.13"
   }
 }
