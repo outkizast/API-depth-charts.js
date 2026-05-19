@@ -1,8 +1,8 @@
 {
-  "name": "project-bds39",
+  "name": "fantasy-proxy",
   "version": "1.0.0",
   "dependencies": {
-    "node-fetch": "^3.3.2",
+    "node-fetch": "^2.7.0",
     "node-html-parser": "^6.1.13"
   }
 }
