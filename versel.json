@@ -1,15 +1,8 @@
 {
   "version": 2,
-  "builds": [
-    {
-      "src": "api/depth-charts.js",
-      "use": "@vercel/node"
+  "functions": {
+    "api/depth-charts.js": {
+      "runtime": "nodejs18.x"
     }
-  ],
-  "routes": [
-    {
-      "src": "/api/depth-charts",
-      "dest": "api/depth-charts.js"
-    }
-  ]
+  }
 }
