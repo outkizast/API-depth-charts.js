@@ -35,34 +35,34 @@ async function scrapeTeamDepthChart(teamAbbr) {
 
   const url = `${OURLADS_BASE}/${teamId}`;
   const res = await fetch(url, { headers: FETCH_HEADERS });
-
   if (!res.ok) throw new Error(`Ourlads fetch failed for ${teamAbbr}: HTTP ${res.status}`);
 
   const html = await res.text();
   const root = parse(html);
   const depthMap = {};
-
   const RELEVANT = new Set(['QB','RB','FB','WR','LWR','RWR','SWR','TE','K']);
 
-  // Ourlads uses a table where each TR is a position row
-  // First TD = position label, subsequent TDs = depth slots
   root.querySelectorAll('tr').forEach((row) => {
     const cells = row.querySelectorAll('td');
-    if (cells.length < 2) return;
+    // Need at least 3 cells: position, jersey#, player name
+    if (cells.length < 3) return;
 
     const rawPos  = cells[0].text.trim().toUpperCase().replace(/[^A-Z]/g, '');
     const basePos = rawPos.replace(/\d+$/, '');
     if (!RELEVANT.has(basePos) && !RELEVANT.has(rawPos)) return;
 
-    cells.slice(1).forEach((cell, idx) => {
-      // Player name is usually in an <a> tag inside the cell
-      const anchor = cell.querySelector('a');
-      const raw    = anchor ? anchor.text.trim() : cell.text.trim();
-      const name   = cleanName(raw);
-      if (!name || name.length < 2) return;
-      const key = `${rawPos}${idx + 1}`;
-      depthMap[key] = name;
-    });
+    // Skip cells[1] (jersey number) — start at cells[2] for actual players
+    // Every 2 cells after that is jersey#, then player name
+    let depthSlot = 1;
+    for (let i = 2; i < cells.length; i += 2) {
+      const anchor = cells[i].querySelector('a');
+      const raw    = anchor ? anchor.text.trim() : cells[i].text.trim();
+      const name   = formatName(raw);
+      if (name && name.length > 2) {
+        depthMap[`${rawPos}${depthSlot}`] = name;
+        depthSlot++;
+      }
+    }
   });
 
   return depthMap;
@@ -73,6 +73,29 @@ function cleanName(raw) {
     .replace(/\(Q\)|\(O\)|\(IR\)|\(D\)|\(P\)|\(DNR\)/gi, '')
     .replace(/\s+/g, ' ')
     .trim();
+}
+
+function formatName(raw) {
+  // Remove contract/draft suffixes like "17/1", "SF24", "CF26", "T/NYJ", "U/Sea"
+  let name = raw
+    .replace(/\b(SF|CF|T|U)[\w\/]+\d*/gi, '')
+    .replace(/\b\d{2}\/\d+\b/g, '')
+    .replace(/\(Q\)|\(O\)|\(IR\)|\(D\)|\(P\)|\(DNR\)/gi, '')
+    .replace(/\s+/g, ' ')
+    .trim();
+
+  // Flip "Last, First" → "First Last"
+  if (name.includes(',')) {
+    const [last, first] = name.split(',').map(s => s.trim());
+    name = `${first} ${last}`.trim();
+  }
+
+  // Title case (Ourlads uses ALL CAPS for top players)
+  name = name.replace(/\b\w+/g, w =>
+    w.charAt(0).toUpperCase() + w.slice(1).toLowerCase()
+  );
+
+  return name.length > 2 ? name : '';
 }
 
 // ─── Debug helper ─────────────────────────────────────────────────────────────
