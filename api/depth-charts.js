@@ -16,7 +16,6 @@
 //   "node-html-parser": "^6.1.13"
 // =============================================================================
 
-const fetch = require('node-fetch');
 const { parse } = require('node-html-parser');
 
 // Ourlads uses its own team slug format — map standard NFL abbrs to Ourlads slugs
